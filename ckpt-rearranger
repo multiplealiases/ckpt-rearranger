@@ -38,8 +38,12 @@ function file_none(){
 # function adapted from https://stackoverflow.com/a/1115909
 function fileswap(){
     local TMPFILE="$(mktemp)"
-    printf 'swapped %s and %s\n' "$1" "$2"
+    if [[ "$1" == "$2" ]]; then
+        printf '%s: cannot swap a file with itself\n' "$1"
+        exit 1
+    fi
     mv -- "$1" "$TMPFILE" && mv -- "$2" "$1" && mv -- "$TMPFILE" "$2"
+    printf 'swapped %s and %s\n' "$1" "$2"
 }
 export -f fileswap
 
@@ -125,6 +129,6 @@ else
     shuf "$tmplist" > "$tmpshuflist"
 fi
 
-parallel --link -k fileswap {1} {2} :::: "$tmplist" :::: "$tmpshuflist" || true
+parallel -j 1 --link -k fileswap {1} {2} :::: "$tmplist" :::: "$tmpshuflist" || true
 
 zip -qq -r -0 ../model.ckpt archive/
