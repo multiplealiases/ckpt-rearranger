@@ -44,11 +44,7 @@ function fileswap(){
 export -f fileswap
 
 function cleanup(){
-    rm -rf "$tmplist" ckpt-rearranger-tmp "$tmpshuflist"
-}
-
-function cleanup_postshuf(){
-    popd
+    popd || true
     rm -rf "$tmplist" ckpt-rearranger-tmp "$tmpshuflist"
 }
 
@@ -119,17 +115,17 @@ trap 'cleanup' ERR EXIT
 
 unzip -d ckpt-rearranger-tmp -o "$checkpoint"
 
+pushd ckpt-rearranger-tmp
+
 if [[ -v number ]]
 then
     find ckpt-rearranger-tmp/archive/data -type f | shuf -n "$number" > "$tmplist"
     shuf "$tmplist" > "$tmpshuflist"
 else
-    cat "$list" > "$tmplist"
+    cat ../"$list" > "$tmplist"
     shuf "$tmplist" > "$tmpshuflist"
 fi
 
-parallel --link -k fileswap {1} {2} :::: "$tmplist" ::: "$tmpshuflist"
+parallel --link -k fileswap {1} {2} :::: "$tmplist" :::: "$tmpshuflist" || true
 
-pushd ckpt-rearranger-tmp
-trap 'cleanup_postshuf' ERR EXIT
 zip -r -0 ../model.ckpt archive/
