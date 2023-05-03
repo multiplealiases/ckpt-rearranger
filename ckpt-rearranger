@@ -100,13 +100,11 @@ if [[ -v number && -v list ]]
 then
     echo "-n and -l are mutually exclusive"
     exit 1
-elif [[ ! ( -v number && -v list )]]
+elif [[ ! ( -v number || -v list )]]
 then
     echo "either -n or -l must be given"
     exit 1
 fi
-
-number="${number:-3}"
 
 mkdir -p ckpt-rearranger-tmp
 pushd ckpt-rearranger-tmp
