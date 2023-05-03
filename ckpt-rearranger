@@ -113,7 +113,7 @@ tmpshuflist="$(mktemp)"
 
 trap 'cleanup' ERR EXIT
 
-unzip ../"$checkpoint"
+unzip -o ../"$checkpoint"
 
 if [[ -v number ]]
 then
