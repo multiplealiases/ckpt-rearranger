@@ -113,7 +113,7 @@ tmpshuflist="$(mktemp)"
 
 trap 'cleanup' ERR EXIT
 
-unzip -d ckpt-rearranger-tmp -o "$checkpoint"
+unzip -qq -d ckpt-rearranger-tmp -o "$checkpoint"
 pushd ckpt-rearranger-tmp
 
 if [[ -v number ]]
@@ -127,4 +127,4 @@ fi
 
 parallel --link -k fileswap {1} {2} :::: "$tmplist" :::: "$tmpshuflist" || true
 
-zip -r -0 ../model.ckpt archive/
+zip -qq -r -0 ../model.ckpt archive/
