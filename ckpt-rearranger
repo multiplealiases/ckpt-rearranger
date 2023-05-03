@@ -114,7 +114,6 @@ tmpshuflist="$(mktemp)"
 trap 'cleanup' ERR EXIT
 
 unzip -d ckpt-rearranger-tmp -o "$checkpoint"
-
 pushd ckpt-rearranger-tmp
 
 if [[ -v number ]]
