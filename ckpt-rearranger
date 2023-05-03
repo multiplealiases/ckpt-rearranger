@@ -36,11 +36,16 @@ function file_none(){
 }
 
 # function adapted from https://stackoverflow.com/a/1115909
-function swap(){
+function fileswap(){
     local TMPFILE="$(mktemp)"
-    mv "$1" $TMPFILE && mv "$2" "$1" && mv $TMPFILE "$2"
+    printf 'swapped %s and %s\n' "$1" "$2"
+    mv -- "$1" "$TMPFILE" && mv -- "$2" "$1" && mv -- "$TMPFILE" "$2"
 }
-export -f swap
+export -f fileswap
+
+function cleanup(){
+    rm -rf "$tmplist" ckpt-rearranger-tmp "$tmpshuflist"
+}
 
 ARGS="$(getopt --options h,n:,l: --long help,number:,list: -- "$@")"
 eval set -- "$ARGS"
@@ -95,4 +100,30 @@ if [[ -v number && -v list ]]
 then
     echo "-n and -l are mutually exclusive"
     exit 1
+elif [[ ! ( -v number && -v list )]]
+then
+    echo "either -n or -l must be given"
+    exit 1
 fi
+
+number="${number:-3}"
+
+mkdir -p ckpt-rearranger-tmp
+pushd ckpt-rearranger-tmp
+tmplist="$(mktemp)"
+tmpshuflist="$(mktemp)"
+
+trap 'cleanup' ERR EXIT
+
+unzip "$checkpoint"
+
+if [[ -v number ]]
+then
+    find archive/data -type f | shuf -n "$number" > "$tmplist"
+    shuf "$tmplist" > "$tmpshuflist"
+else
+    cat "$list" > "$tmplist"
+    shuf "$tmplist" > "$tmpshuflist"
+fi
+
+parallel --link -k fileswap {1} {2} :::: "$tmplist" ::: "$tmpshuflist"
