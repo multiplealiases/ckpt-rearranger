@@ -47,6 +47,11 @@ function cleanup(){
     rm -rf "$tmplist" ckpt-rearranger-tmp "$tmpshuflist"
 }
 
+function cleanup_postshuf(){
+    popd
+    rm -rf "$tmplist" ckpt-rearranger-tmp "$tmpshuflist"
+}
+
 ARGS="$(getopt --options h,n:,l: --long help,number:,list: -- "$@")"
 eval set -- "$ARGS"
 while true
@@ -107,24 +112,24 @@ then
 fi
 
 mkdir -p ckpt-rearranger-tmp
-pushd ckpt-rearranger-tmp
 tmplist="$(mktemp)"
 tmpshuflist="$(mktemp)"
 
 trap 'cleanup' ERR EXIT
 
-unzip -o ../"$checkpoint"
+unzip -d ckpt-rearranger-tmp -o "$checkpoint"
 
 if [[ -v number ]]
 then
-    find archive/data -type f | shuf -n "$number" > "$tmplist"
+    find ckpt-rearranger-tmp/archive/data -type f | shuf -n "$number" > "$tmplist"
     shuf "$tmplist" > "$tmpshuflist"
 else
-    cat ../"$list" > "$tmplist"
+    cat "$list" > "$tmplist"
     shuf "$tmplist" > "$tmpshuflist"
 fi
 
 parallel --link -k fileswap {1} {2} :::: "$tmplist" ::: "$tmpshuflist"
 
-popd
-zip -r -0 model.ckpt archive/
+pushd ckpt-rearranger-tmp
+trap 'cleanup_postshuf' ERR EXIT
+zip -r -0 ../model.ckpt archive/
