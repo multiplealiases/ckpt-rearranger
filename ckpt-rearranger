@@ -36,6 +36,7 @@ function file_none(){
 }
 
 # function adapted from https://stackoverflow.com/a/1115909
+# do not run in parallel! this function is *not* atomic!
 function fileswap(){
     local TMPFILE="$(mktemp)"
     if [[ "$1" == "$2" ]]; then
