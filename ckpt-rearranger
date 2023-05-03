@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+
+function banner() {
+    echo Rearranges the contents of ckpt files and repacks them
+}
+
+function usage() {
+    echo Usage: ckpt-rearranger \[options\] \[ckpt file\]
+}
+
+function help_text(){
+    cat << EOF
+$(banner)
+$(usage)
+
+Defaults shown in [].
+-l, --list      list of files to rearrange
+-n, --number    number of files to rearrange [3]
+
+Produces a file called model.ckpt as output. Please make backups.
+EOF
+}
+
+function file_notexist(){
+    printf ''\''%s'\'': file does not exist\n' "$1"
+    exit 1
+}
+
+function file_none(){
+    echo No file was specified.
+    help_text
+    exit 1
+}
+
+# function adapted from https://stackoverflow.com/a/1115909
+function swap(){
+    local TMPFILE="$(mktemp)"
+    mv "$1" $TMPFILE && mv "$2" "$1" && mv $TMPFILE "$2"
+}
+export -f swap
+
+ARGS="$(getopt --options h,n:,l: --long help,number:,list: -- "$@")"
+eval set -- "$ARGS"
+while true
+do
+    case "$1" in
+    -h | --help)
+        help_text
+        exit 1
+        ;;
+    -n | --number)
+        number="$2"
+        shift 2
+        ;;
+    -l | --list)
+        set +o nounset
+        if [[ -z "$2" ]]
+        then
+            printf 'list '
+            file_none
+        elif [[ ! -e "$2" ]]
+        then
+            printf 'list '
+            file_notexist "$2"
+        fi
+        set -o nounset
+        list="$2"
+        shift 2
+        ;;
+    --)
+        set +o nounset
+        if [[ -z "$2" ]]
+        then
+            file_none
+        elif [[ ! -e "$2" ]]
+        then
+            file_notexist "$2"
+        fi
+        set -o nounset
+        checkpoint="$2"
+        break
+        ;;
+    *)
+        printf 'How did you get here? The last args I saw were \n%s\n' "$@"
+        exit 1
+        break
+        ;;
+    esac
+done
+
+if [[ -v number && -v list ]]
+then
+    echo "-n and -l are mutually exclusive"
+    exit 1
+fi
