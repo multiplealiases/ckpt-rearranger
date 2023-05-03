@@ -16,9 +16,9 @@ function help_text(){
 $(banner)
 $(usage)
 
-Defaults shown in [].
+either of -l or -n must be specified
 -l, --list      list of files to rearrange
--n, --number    number of files to rearrange [3]
+-n, --number    number of files to rearrange
 
 Produces a file called model.ckpt as output. Please make backups.
 EOF
