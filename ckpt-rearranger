@@ -127,3 +127,6 @@ else
 fi
 
 parallel --link -k fileswap {1} {2} :::: "$tmplist" ::: "$tmpshuflist"
+
+popd
+zip -r -0 model.ckpt archive/
