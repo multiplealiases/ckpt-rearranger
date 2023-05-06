@@ -123,7 +123,7 @@ pushd ckpt-rearranger-tmp
 
 if [[ -v number ]]
 then
-    find ckpt-rearranger-tmp/archive/data -type f | shuf -n "$number" > "$tmplist"
+    find archive/data -type f | shuf -n "$number" > "$tmplist"
     shuf "$tmplist" > "$tmpshuflist"
 else
     cat ../"$list" > "$tmplist"
